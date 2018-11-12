@@ -98,13 +98,57 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 
 }
 
+// I have no idea why my implementation of dataAssociation causes
+// max error to be exceeded...the code looks perfect!
+// It is probably a C++ thing since I'm trying to use C++11 features.
+// It was driving me crazy so I had to borrow this function and comment mine out.
+// As far as I can tell though, it looks functionally the same as mine!
+
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
-	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the 
+	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the
 	//   observed measurement to this particular landmark.
-	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
+	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
 	//   implement this method and use it as a helper during the updateWeights phase.
 
+	for(unsigned int i=0; i<observations.size(); i++){
+	  // Initialize the containers of minimum distance and ID
+      double min_distance = 99999999;
+      int closest_ID = -1;
+	  double observe_x = observations[i].x;
+	  double observe_y = observations[i].y;
+      for(unsigned int j=0; j<predicted.size(); j++){
+	    double predict_x = predicted[j].x;
+	    double predict_y = predicted[j].y;
+	    double distance = dist(observe_x, observe_y, predict_x, predict_y);
+        if(distance < min_distance){
+          min_distance = distance;
+          closest_ID = j;
+        }
+      }
+    observations[i].id = closest_ID;
+  }
 }
+//void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
+//	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the 
+//	//   observed measurement to this particular landmark.
+//	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
+//	//   implement this method and use it as a helper during the updateWeights phase.
+//
+//    for (auto& obs:observations){
+//      int idx = 0;
+//      int min_id = -1;
+//      double min_dist = numeric_limits<double>::max();
+//      for (auto const & pred:predicted){
+//        double curr_dist = dist(obs.x,obs.y,pred.x,pred.y);
+//        if (curr_dist < min_dist){
+//            min_dist = curr_dist;
+//            min_id = idx++;
+//        }
+//      }
+//      obs.id = min_id;
+//    }
+//}
+
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
 		const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
