@@ -72,14 +72,14 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	
 	// creates a normal (Gaussian) distribution for x.
 	// Create normal distributions for y and theta.
-	//normal_distribution<double> dist_x(x, std_x);
-	//normal_distribution<double> dist_y(y, std_y);
-	//normal_distribution<double> dist_theta(theta, std_theta);
+	normal_distribution<double> dist_x(0, std_x);
+	normal_distribution<double> dist_y(0, std_y);
+	normal_distribution<double> dist_theta(0, std_theta);
 
 	for (int i = 0; i < num_particles; ++i) {
-	    normal_distribution<double> dist_x(particles[i].x,std_x);
-	    normal_distribution<double> dist_y(particles[i].y,std_y);
-	    normal_distribution<double> dist_theta(particles[i].theta,std_theta);
+	    //normal_distribution<double> dist_x(particles[i].x,std_x);
+	    //normal_distribution<double> dist_y(particles[i].y,std_y);
+	    //normal_distribution<double> dist_theta(particles[i].theta,std_theta);
         // Add measurements
         particles[i].x += (velocity/yaw_rate)*(sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
         particles[i].y += (velocity/yaw_rate)*(cos(particles[i].theta) - cos(particles[i].theta+yaw_rate*delta_t));
