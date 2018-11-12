@@ -57,6 +57,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     is_initialized = true;
 }
 
+
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
 	// TODO: Add measurements to each particle and add random Gaussian noise.
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
@@ -95,7 +96,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
         particles[i].y += dist_y(gen);
         particles[i].theta += dist_theta(gen);
     }
-
 }
 
 // I have no idea why my implementation of dataAssociation causes
@@ -162,8 +162,66 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
-}
+    weights.clear();
+    for (auto& p:particles){
+      vector<LandmarkObs> landmarks_in_range;
+      for(auto &lm:map_landmarks.landmark_list){
+        if (fabs(lm.x_f - p.x) <= sensor_range && fabs(lm.y_f-p.y) <= sensor_range){
+          landmarks_in_range.push_back(LandmarkObs{lm.id_i, lm.x_f, lm.y_f});
+        }
+      }
 
+      // Observations == sensor measurements of landmarks
+      // sensor measurements are always from car's point of view
+      // 
+      // particles == potential locations of the car on the map
+      //
+      // Therefore, need to put everything on the map by converting observations
+      // from car coordinates to map coordinates
+
+      auto map_obs = observations;
+      int idx = 0;
+      for (auto& obs:map_obs){
+        // transform to map x coordinate
+        double obs_x  = p.x + (cos(p.theta) * obs.x) - (sin(p.theta) * obs.y);
+        // transform to map y coordinate
+        double obs_y = p.y + (sin(p.theta) * obs.x) + (cos(p.theta) * obs.y);
+        obs.x = obs_x;
+        obs.y = obs_y;
+        obs.id = idx++;  
+      }
+
+      //Now that observations have been transformed into the map's coordinate space, 
+      //the next step is to associate each transformed observation with a land mark identifier.
+      dataAssociation(landmarks_in_range, map_obs);
+
+      //Now we that we have done the measurement transformations and associations, 
+      //we have all the pieces we need to calculate the particle's final weight. 
+      //The particles final weight will be calculated as the product of each measurement's 
+      //Multivariate-Gaussian probability density.
+	  // Weight calculation of the particles
+	  double sigma_x_2 = std_landmark[0] * std_landmark[0];
+	  double sigma_y_2 = std_landmark[1] * std_landmark[1];
+	  double k = 1.0 / (2.0 * M_PI * std_landmark[0] * std_landmark[1]);
+	  p.weight = 1.0;
+
+	  for (unsigned int i=0; i<map_obs.size(); i++) {
+	  	double map_obs_x = map_obs[i].x;
+	  	double map_obs_y = map_obs[i].y;
+	  	double map_landmark_index = map_obs[i].id;
+ 
+	  	double map_landmark_x = landmarks_in_range[map_landmark_index].x;
+	  	double map_landmark_y = landmarks_in_range[map_landmark_index].y;
+
+	  	double dx = map_obs_x - map_landmark_x;
+	  	double dy = map_obs_y - map_landmark_y;
+
+	  	double landmark_weight = k*exp(-1.0*(dx*dx/(2.0*sigma_x_2)+dy*dy/(2.0*sigma_y_2)));
+	  	p.weight *= landmark_weight;
+	  }
+	  weights.push_back(p.weight);
+    }
+}
 void ParticleFilter::resample() {
 	// TODO: Resample particles with replacement with probability proportional to their weight.
 	// NOTE: You may find std::discrete_distribution helpful here.
