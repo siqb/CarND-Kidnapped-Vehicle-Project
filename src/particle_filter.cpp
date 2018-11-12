@@ -203,23 +203,20 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       //The particles final weight will be calculated as the product of each measurement's 
       //Multivariate-Gaussian probability density.
 	  // Weight calculation of the particles
-	  double sigma_x_2 = std_landmark[0] * std_landmark[0];
-	  double sigma_y_2 = std_landmark[1] * std_landmark[1];
-	  double k = 1.0 / (2.0 * M_PI * std_landmark[0] * std_landmark[1]);
 	  p.weight = 1.0;
+	  double sigma_x_sq = std_landmark[0] * std_landmark[0];
+	  double sigma_y_sq = std_landmark[1] * std_landmark[1];
+	  double k = 1.0 / (2.0 * M_PI * std_landmark[0] * std_landmark[1]);
 
 	  for (unsigned int i=0; i<map_obs.size(); i++) {
 	  	double map_obs_x = map_obs[i].x;
 	  	double map_obs_y = map_obs[i].y;
 	  	double map_landmark_index = map_obs[i].id;
- 
 	  	double map_landmark_x = landmarks_in_range[map_landmark_index].x;
 	  	double map_landmark_y = landmarks_in_range[map_landmark_index].y;
-
 	  	double dx = map_obs_x - map_landmark_x;
 	  	double dy = map_obs_y - map_landmark_y;
-
-	  	double landmark_weight = k*exp(-1.0*(dx*dx/(2.0*sigma_x_2)+dy*dy/(2.0*sigma_y_2)));
+	  	double landmark_weight = k*exp(-1.0*(dx*dx/(2.0*sigma_x_sq)+dy*dy/(2.0*sigma_y_sq)));
 	  	p.weight *= landmark_weight;
 	  }
 	  weights.push_back(p.weight);
@@ -232,11 +229,9 @@ void ParticleFilter::resample() {
 
 	discrete_distribution<> distribution(weights.begin(), weights.end());
 	vector<Particle> resampled_particles;
-    //default_random_engine gen;
 
-	int index;
-	for (int i=0; i<num_particles; i++) {
-		index = distribution(gen);
+	for (auto p:particles) {
+		int index = distribution(gen);
 		resampled_particles.push_back(particles[index]);
 	}
 	particles = resampled_particles;
