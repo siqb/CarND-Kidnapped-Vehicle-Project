@@ -31,7 +31,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     // Use the C++ standard library normal distribution and C++ standard library 
     // random engine functions to sample positions around GPS measurements.
 
-	default_random_engine gen;
+	//default_random_engine gen;
 	double std_x, std_y, std_theta; // Standard deviations for x, y, and theta
 	 
 	std_x = std[0];
@@ -63,7 +63,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
-	default_random_engine gen;
+	//default_random_engine gen;
 	double std_x, std_y, std_theta; // Standard deviations for x, y, and theta
 	 
 	std_x = std_pos[0];
