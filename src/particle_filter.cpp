@@ -101,14 +101,17 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 // I have no idea why my implementation of dataAssociation causes
 // max error to be exceeded...the code looks perfect!
 // It is probably a C++ thing since I'm trying to use C++11 features.
-// It was driving me crazy so I had to borrow this function and comment mine out.
-// As far as I can tell though, it looks functionally the same as mine!
+// It was driving me crazy so I had to borrow this function and comment mine out in order
+// to debug my code. As far as I can tell though, it looks functionally the same as mine!
+//
+// I can't remember where I borrwed this from, but it is pretty generic in nature.
+// It should do the same thing as my code but without C++11 range based for loops.
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations) {
 	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the
-	//   observed measurement to this particular landmark.
+	// observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
-	//   implement this method and use it as a helper during the updateWeights phase.
+	// implement this method and use it as a helper during the updateWeights phase.
 
 	for(unsigned int i=0; i<observations.size(); i++){
 	  // Initialize the containers of minimum distance and ID
